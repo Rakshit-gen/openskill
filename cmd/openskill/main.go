@@ -16,11 +16,15 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
+	rootCmd.AddCommand(commands.InitCmd)
 	rootCmd.AddCommand(commands.AddCmd)
 	rootCmd.AddCommand(commands.ListCmd)
 	rootCmd.AddCommand(commands.ShowCmd)
 	rootCmd.AddCommand(commands.EditCmd)
 	rootCmd.AddCommand(commands.RemoveCmd)
+	rootCmd.AddCommand(commands.ValidateCmd)
+	rootCmd.AddCommand(commands.HistoryCmd)
+	rootCmd.AddCommand(commands.RollbackCmd)
 	rootCmd.AddCommand(commands.ConfigCmd)
 }
 

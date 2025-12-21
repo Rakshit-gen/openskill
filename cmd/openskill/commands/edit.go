@@ -30,6 +30,12 @@ var EditCmd = &cobra.Command{
 			return fmt.Errorf("skill '%s' not found", name)
 		}
 
+		// Save current version to history before editing
+		if err := SaveVersion(name); err != nil {
+			// Non-fatal, just warn
+			fmt.Printf("Warning: could not save version history: %v\n", err)
+		}
+
 		// Update fields if provided
 		if editName != "" {
 			skill.Name = editName
