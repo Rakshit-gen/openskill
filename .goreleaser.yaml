@@ -35,7 +35,7 @@ brews:
       owner: rakshit-gen
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-    folder: Formula
+    directory: Formula
     install: |
       bin.install "openskill"
 
