@@ -4,20 +4,41 @@ A CLI tool to create and manage Claude skills with AI-powered content generation
 
 ## Installation
 
-### Homebrew (macOS/Linux)
+### macOS (Apple Silicon)
 
 ```bash
-brew tap rakshitsisodiya/tap
-brew install openskill
+curl -L https://github.com/Rakshit-gen/openskill/releases/download/v0.1.0/openskill_darwin_arm64.tar.gz | tar xz
+sudo mv openskill /usr/local/bin/
+```
+
+### macOS (Intel)
+
+```bash
+curl -L https://github.com/Rakshit-gen/openskill/releases/download/v0.1.0/openskill_darwin_amd64.tar.gz | tar xz
+sudo mv openskill /usr/local/bin/
+```
+
+### Linux (x86_64)
+
+```bash
+curl -L https://github.com/Rakshit-gen/openskill/releases/download/v0.1.0/openskill_linux_amd64.tar.gz | tar xz
+sudo mv openskill /usr/local/bin/
+```
+
+### Linux (ARM64)
+
+```bash
+curl -L https://github.com/Rakshit-gen/openskill/releases/download/v0.1.0/openskill_linux_arm64.tar.gz | tar xz
+sudo mv openskill /usr/local/bin/
 ```
 
 ### From Source
 
 ```bash
-git clone https://github.com/rakshitsisodiya/openskill.git
+git clone https://github.com/Rakshit-gen/openskill.git
 cd openskill
 make build
-./build/openskill --help
+sudo mv build/openskill /usr/local/bin/
 ```
 
 ## Setup
@@ -76,4 +97,3 @@ Skills are saved to `.claude/skills/` in your current directory as YAML files.
 ## License
 
 MIT
-# openskill
