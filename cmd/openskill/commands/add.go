@@ -37,7 +37,7 @@ var AddCmd = &cobra.Command{
 			if !gen.IsAvailable() {
 				return fmt.Errorf("API key not configured. Set it with:\n\n  openskill config set api-key\n\nOr use --manual flag to skip AI generation")
 			}
-			fmt.Printf("Generating skill with AI...\n")
+			fmt.Printf("Generating skill with %s...\n", gen.ProviderName())
 			enhanced, err := gen.EnhanceSkill(name, addDesc)
 			if err != nil {
 				return fmt.Errorf("AI generation failed: %w", err)

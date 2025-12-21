@@ -4,13 +4,31 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	GroqAPIKey string `yaml:"groq_api_key"`
-	Model      string `yaml:"model,omitempty"`
+	// Provider selection
+	Provider string `yaml:"provider,omitempty"` // groq, openai, anthropic, ollama
+
+	// Legacy Groq key (for backwards compatibility)
+	GroqAPIKey string `yaml:"groq_api_key,omitempty"`
+
+	// Provider-specific API keys
+	OpenAIAPIKey    string `yaml:"openai_api_key,omitempty"`
+	AnthropicAPIKey string `yaml:"anthropic_api_key,omitempty"`
+
+	// Model settings (per provider)
+	Model          string `yaml:"model,omitempty"`           // Default model
+	GroqModel      string `yaml:"groq_model,omitempty"`      // Groq-specific model
+	OpenAIModel    string `yaml:"openai_model,omitempty"`    // OpenAI-specific model
+	AnthropicModel string `yaml:"anthropic_model,omitempty"` // Anthropic-specific model
+	OllamaModel    string `yaml:"ollama_model,omitempty"`    // Ollama-specific model
+
+	// Ollama settings
+	OllamaEndpoint string `yaml:"ollama_endpoint,omitempty"` // Custom Ollama endpoint
 }
 
 func configDir() (string, error) {
@@ -74,10 +92,39 @@ func Save(cfg *Config) error {
 	return os.WriteFile(path, data, 0600)
 }
 
-func GetAPIKey() string {
+// GetProvider returns the active provider
+func GetProvider() string {
 	// Environment variable takes precedence
-	if key := os.Getenv("GROQ_API_KEY"); key != "" {
-		return key
+	if provider := os.Getenv("OPENSKILL_PROVIDER"); provider != "" {
+		return strings.ToLower(provider)
+	}
+
+	cfg, err := Load()
+	if err != nil || cfg.Provider == "" {
+		return "groq" // Default to groq for backwards compatibility
+	}
+
+	return strings.ToLower(cfg.Provider)
+}
+
+// GetProviderAPIKey returns the API key for a specific provider
+func GetProviderAPIKey(provider string) string {
+	provider = strings.ToLower(provider)
+
+	// Check environment variables first
+	switch provider {
+	case "groq":
+		if key := os.Getenv("GROQ_API_KEY"); key != "" {
+			return key
+		}
+	case "openai":
+		if key := os.Getenv("OPENAI_API_KEY"); key != "" {
+			return key
+		}
+	case "anthropic":
+		if key := os.Getenv("ANTHROPIC_API_KEY"); key != "" {
+			return key
+		}
 	}
 
 	// Fall back to config file
@@ -86,20 +133,94 @@ func GetAPIKey() string {
 		return ""
 	}
 
-	return cfg.GroqAPIKey
+	switch provider {
+	case "groq":
+		return cfg.GroqAPIKey
+	case "openai":
+		return cfg.OpenAIAPIKey
+	case "anthropic":
+		return cfg.AnthropicAPIKey
+	}
+
+	return ""
 }
 
-func GetModel() string {
-	// Environment variable takes precedence
+// GetProviderModel returns the model for a specific provider
+func GetProviderModel(provider string) string {
+	provider = strings.ToLower(provider)
+
+	// Check environment variable first
 	if model := os.Getenv("OPENSKILL_MODEL"); model != "" {
 		return model
 	}
 
-	// Fall back to config file
 	cfg, err := Load()
-	if err != nil || cfg.Model == "" {
-		return "llama-3.3-70b-versatile"
+	if err != nil {
+		return getDefaultModel(provider)
 	}
 
-	return cfg.Model
+	// Check provider-specific model first
+	switch provider {
+	case "groq":
+		if cfg.GroqModel != "" {
+			return cfg.GroqModel
+		}
+	case "openai":
+		if cfg.OpenAIModel != "" {
+			return cfg.OpenAIModel
+		}
+	case "anthropic":
+		if cfg.AnthropicModel != "" {
+			return cfg.AnthropicModel
+		}
+	case "ollama":
+		if cfg.OllamaModel != "" {
+			return cfg.OllamaModel
+		}
+	}
+
+	// Fall back to generic model setting
+	if cfg.Model != "" {
+		return cfg.Model
+	}
+
+	return getDefaultModel(provider)
+}
+
+func getDefaultModel(provider string) string {
+	switch provider {
+	case "groq":
+		return "llama-3.3-70b-versatile"
+	case "openai":
+		return "gpt-4o-mini"
+	case "anthropic":
+		return "claude-3-5-sonnet-20241022"
+	case "ollama":
+		return "llama3.2"
+	default:
+		return "llama-3.3-70b-versatile"
+	}
+}
+
+// GetOllamaEndpoint returns the Ollama endpoint
+func GetOllamaEndpoint() string {
+	if endpoint := os.Getenv("OLLAMA_HOST"); endpoint != "" {
+		return endpoint + "/api/chat"
+	}
+
+	cfg, err := Load()
+	if err != nil || cfg.OllamaEndpoint == "" {
+		return "http://localhost:11434/api/chat"
+	}
+
+	return cfg.OllamaEndpoint
+}
+
+// Legacy functions for backwards compatibility
+func GetAPIKey() string {
+	return GetProviderAPIKey(GetProvider())
+}
+
+func GetModel() string {
+	return GetProviderModel(GetProvider())
 }

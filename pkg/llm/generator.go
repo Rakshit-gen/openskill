@@ -5,19 +5,69 @@ import (
 	"fmt"
 	"strings"
 
+	"openskill/pkg/config"
 	"openskill/pkg/core"
 )
 
 type Generator struct {
-	client *Client
+	provider Provider
 }
 
+// NewGenerator creates a new generator with the configured provider
 func NewGenerator() *Generator {
-	return &Generator{client: NewClient()}
+	return &Generator{provider: GetProvider()}
+}
+
+// NewGeneratorWithProvider creates a generator with a specific provider
+func NewGeneratorWithProvider(providerName string) *Generator {
+	return &Generator{provider: GetProviderByName(providerName)}
+}
+
+// GetProvider returns the configured provider
+func GetProvider() Provider {
+	providerName := config.GetProvider()
+	return GetProviderByName(providerName)
+}
+
+// GetProviderByName returns a provider by name
+func GetProviderByName(name string) Provider {
+	switch strings.ToLower(name) {
+	case "openai":
+		return NewOpenAIClient()
+	case "anthropic":
+		return NewAnthropicClient()
+	case "ollama":
+		return NewOllamaClient()
+	default:
+		return NewClient() // Default to Groq
+	}
+}
+
+// GetAvailableProviders returns a list of configured providers
+func GetAvailableProviders() []string {
+	var available []string
+
+	if NewClient().IsConfigured() {
+		available = append(available, "groq")
+	}
+	if NewOpenAIClient().IsConfigured() {
+		available = append(available, "openai")
+	}
+	if NewAnthropicClient().IsConfigured() {
+		available = append(available, "anthropic")
+	}
+	// Ollama is always "available" since it doesn't need an API key
+	available = append(available, "ollama")
+
+	return available
 }
 
 func (g *Generator) IsAvailable() bool {
-	return g.client.IsConfigured()
+	return g.provider.IsConfigured()
+}
+
+func (g *Generator) ProviderName() string {
+	return g.provider.Name()
 }
 
 func (g *Generator) EnhanceSkill(name, description string) (*core.Skill, error) {
@@ -85,7 +135,7 @@ Response format (JSON only, no markdown, no code blocks):
   "rules": ["rule1", "rule2", "rule3", "rule4", "rule5", "rule6", "rule7", "rule8", ...]
 }`, name, description)
 
-	response, err := g.client.Generate(prompt)
+	response, err := g.provider.Generate(prompt)
 	if err != nil {
 		return nil, err
 	}

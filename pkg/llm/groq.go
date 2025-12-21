@@ -9,16 +9,24 @@ import (
 	"openskill/pkg/config"
 )
 
+// Client is the Groq API client (kept for backwards compatibility)
 type Client struct {
-	apiKey string
-	model  string
+	apiKey   string
+	model    string
+	endpoint string
 }
 
+// NewClient creates a new Groq client
 func NewClient() *Client {
 	return &Client{
-		apiKey: config.GetAPIKey(),
-		model:  config.GetModel(),
+		apiKey:   config.GetProviderAPIKey(string(ProviderGroq)),
+		model:    config.GetProviderModel(string(ProviderGroq)),
+		endpoint: ProviderEndpoints[ProviderGroq],
 	}
+}
+
+func (c *Client) Name() string {
+	return "Groq"
 }
 
 func (c *Client) IsConfigured() bool {
@@ -52,7 +60,7 @@ func (c *Client) Generate(prompt string) (string, error) {
 	}
 
 	body, _ := json.Marshal(req)
-	httpReq, _ := http.NewRequest("POST", "https://api.groq.com/openai/v1/chat/completions", bytes.NewBuffer(body))
+	httpReq, _ := http.NewRequest("POST", c.endpoint, bytes.NewBuffer(body))
 	httpReq.Header.Set("Authorization", "Bearer "+c.apiKey)
 	httpReq.Header.Set("Content-Type", "application/json")
 
@@ -63,7 +71,7 @@ func (c *Client) Generate(prompt string) (string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return "", fmt.Errorf("API error: %s", resp.Status)
+		return "", fmt.Errorf("Groq API error: %s", resp.Status)
 	}
 
 	var result chatResponse
@@ -72,7 +80,7 @@ func (c *Client) Generate(prompt string) (string, error) {
 	}
 
 	if len(result.Choices) == 0 {
-		return "", fmt.Errorf("no response from LLM")
+		return "", fmt.Errorf("no response from Groq")
 	}
 
 	return result.Choices[0].Message.Content, nil

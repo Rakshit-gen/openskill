@@ -27,15 +27,25 @@
 
 ## What is OpenSkill?
 
-OpenSkill is a command-line tool that simplifies creating and managing [Claude](https://claude.ai) skills. It uses AI (powered by [Groq](https://groq.com)) to automatically generate comprehensive skill descriptions and rules from simple prompts.
+OpenSkill is a command-line tool that simplifies creating and managing [Claude](https://claude.ai) skills. It uses AI to automatically generate comprehensive skill descriptions and rules from simple prompts.
 
 ### Features
 
-- **AI-Powered Generation** - Automatically generate detailed skill content from brief descriptions
-- **Simple CLI** - Intuitive commands that get out of your way
-- **YAML Storage** - Skills stored as readable YAML files for easy version control
-- **Local First** - Your skills stay on your machine, no cloud sync required
+- **Multi-Provider AI** - Choose from Groq, OpenAI, Anthropic, or Ollama (local)
+- **SKILL.md Format** - Skills stored as Markdown with YAML frontmatter for Claude's native skill discovery
+- **Version History** - Track changes with automatic versioning and rollback support
+- **Skill Composition** - Extend and combine skills with `extends` and `includes`
+- **Validation** - Validate skill structure before deploying
 - **Fast** - Built in Go for maximum performance
+
+### Supported AI Providers
+
+| Provider | Model (Default) | API Key |
+|----------|-----------------|---------|
+| **Groq** | llama-3.3-70b-versatile | [console.groq.com](https://console.groq.com) |
+| **OpenAI** | gpt-4o-mini | [platform.openai.com](https://platform.openai.com) |
+| **Anthropic** | claude-3-5-sonnet-20241022 | [console.anthropic.com](https://console.anthropic.com) |
+| **Ollama** | llama3.2 | No API key (runs locally) |
 
 ## Installation
 
@@ -75,9 +85,9 @@ Requires Go 1.21+
 
 ```bash
 git clone https://github.com/rakshit-gen/openskill.git
-cd openskill
-make build
-sudo make install
+cd openskill/OpenSkill-cli
+go build -o openskill ./cmd/openskill
+sudo mv openskill /usr/local/bin/
 ```
 
 ### Verify Installation
@@ -88,23 +98,75 @@ openskill --help
 
 ## Configuration
 
-### Groq API Key
+### Set Up Your AI Provider
 
-OpenSkill uses Groq's LLM for AI-powered skill generation. Get your free API key:
-
-1. Visit [console.groq.com](https://console.groq.com)
-2. Create a free account
-3. Generate an API key
-
-Set your API key:
+OpenSkill supports multiple AI providers. Set your preferred provider and API key:
 
 ```bash
-export GROQ_API_KEY=your_key_here
+# Set provider (default: groq)
+openskill config set provider groq    # or: openai, anthropic, ollama
+
+# Set API key for your provider
+openskill config set api-key
 ```
 
-Add this to your shell profile (`~/.bashrc`, `~/.zshrc`, etc.) for persistence.
+### Provider-Specific Setup
+
+#### Groq (Default - Free & Fast)
+
+```bash
+openskill config set provider groq
+openskill config set groq-api-key YOUR_KEY
+```
+
+#### OpenAI
+
+```bash
+openskill config set provider openai
+openskill config set openai-api-key YOUR_KEY
+```
+
+#### Anthropic
+
+```bash
+openskill config set provider anthropic
+openskill config set anthropic-api-key YOUR_KEY
+```
+
+#### Ollama (Local - No API Key)
+
+```bash
+# Make sure Ollama is running: ollama serve
+openskill config set provider ollama
+openskill config set ollama-model llama3.2
+```
+
+### View Configuration
+
+```bash
+openskill config list
+```
+
+### Environment Variables
+
+Environment variables take precedence over config file:
+
+| Variable | Description |
+|----------|-------------|
+| `OPENSKILL_PROVIDER` | Active provider (groq, openai, anthropic, ollama) |
+| `GROQ_API_KEY` | Groq API key |
+| `OPENAI_API_KEY` | OpenAI API key |
+| `ANTHROPIC_API_KEY` | Anthropic API key |
+| `OPENSKILL_MODEL` | Override model for any provider |
+| `OLLAMA_HOST` | Custom Ollama endpoint |
 
 ## Quick Start
+
+### Initialize OpenSkill
+
+```bash
+openskill init
+```
 
 ### Create your first skill
 
@@ -112,10 +174,10 @@ Add this to your shell profile (`~/.bashrc`, `~/.zshrc`, etc.) for persistence.
 openskill add "code-review" -d "Reviews code for best practices"
 ```
 
-The AI will generate a comprehensive skill with detailed rules:
+The AI will generate a comprehensive skill:
 
 ```
-Generating skill with AI...
+Generating skill with Groq...
 
 ✓ Added skill: code-review
   Description: Comprehensive code review focusing on security, performance, and maintainability
@@ -142,6 +204,7 @@ openskill show "code-review"
 
 | Command | Description |
 |---------|-------------|
+| `openskill init` | Initialize OpenSkill in your project |
 | `openskill add <name> -d <description>` | Create a new skill with AI generation |
 | `openskill add <name> -d <desc> --manual -r <rule>` | Create skill manually with custom rules |
 | `openskill list` | List all skills |
@@ -149,6 +212,12 @@ openskill show "code-review"
 | `openskill edit <name> -d <description>` | Update skill description |
 | `openskill edit <name> -r <rule1> -r <rule2>` | Replace skill rules |
 | `openskill remove <name>` | Delete a skill |
+| `openskill validate <name>` | Validate skill structure |
+| `openskill history <name>` | Show version history |
+| `openskill rollback <name> <version>` | Restore a previous version |
+| `openskill config set <key> [value]` | Set configuration |
+| `openskill config get <key>` | Get configuration value |
+| `openskill config list` | List all configuration |
 
 ### Flags
 
@@ -160,18 +229,74 @@ openskill show "code-review"
 
 ## Skill Format
 
-Skills are stored as YAML files in `.claude/skills/` directory:
+Skills are stored as Markdown files with YAML frontmatter in `.claude/skills/<name>/SKILL.md`:
 
-```yaml
+```
+.claude/
+└── skills/
+    ├── code-review/
+    │   └── SKILL.md
+    └── bug-finder/
+        └── SKILL.md
+```
+
+### SKILL.md Structure
+
+```markdown
+---
 name: code-review
-description: >
-  Comprehensive code review focusing on security,
-  performance, and maintainability best practices.
-rules:
-  - Check for security vulnerabilities
-  - Verify proper error handling
-  - Ensure code follows conventions
-  - Review test coverage
+description: Comprehensive code review focusing on security and maintainability
+---
+
+# code-review
+
+Comprehensive code review focusing on security, performance,
+and maintainability best practices.
+
+## Rules
+
+- Check for security vulnerabilities (XSS, SQL injection, etc.)
+- Verify proper error handling and edge cases
+- Ensure code follows project conventions
+- Review test coverage and quality
+```
+
+### Skill Composition
+
+Extend skills with `extends`:
+
+```markdown
+---
+name: security-review
+description: Security-focused code review
+extends: code-review
+---
+
+# security-review
+
+## Rules
+
+- Focus on OWASP Top 10 vulnerabilities
+- Check authentication and authorization flows
+```
+
+Combine skills with `includes`:
+
+```markdown
+---
+name: full-review
+description: Comprehensive review combining multiple aspects
+includes:
+  - code-review
+  - security-review
+  - performance-review
+---
+
+# full-review
+
+## Rules
+
+- Provide a summary score for each review area
 ```
 
 ## Project Structure
@@ -182,19 +307,30 @@ openskill/
 │   └── openskill/
 │       ├── main.go           # Entry point
 │       └── commands/         # CLI commands
-│           ├── add.go
-│           ├── list.go
-│           ├── show.go
-│           ├── edit.go
-│           └── remove.go
+│           ├── init.go       # Initialize project
+│           ├── add.go        # Add skills
+│           ├── list.go       # List skills
+│           ├── show.go       # Show skill details
+│           ├── edit.go       # Edit skills
+│           ├── remove.go     # Remove skills
+│           ├── validate.go   # Validate skills
+│           ├── history.go    # Version history
+│           ├── rollback.go   # Rollback versions
+│           └── config.go     # Configuration
 ├── pkg/
 │   ├── core/
 │   │   └── skill.go          # Skill data structure
 │   ├── skills/
 │   │   └── manager.go        # Skill file management
-│   └── llm/
-│       ├── generator.go      # AI generation interface
-│       └── groq.go           # Groq API client
+│   ├── llm/
+│   │   ├── provider.go       # Provider interface
+│   │   ├── generator.go      # AI generation
+│   │   ├── groq.go           # Groq client
+│   │   ├── openai.go         # OpenAI client
+│   │   ├── anthropic.go      # Anthropic client
+│   │   └── ollama.go         # Ollama client
+│   └── config/
+│       └── config.go         # Configuration management
 ├── Makefile
 ├── go.mod
 └── go.sum
@@ -224,14 +360,6 @@ make lint       # Run linter
 make release    # Build for all platforms
 ```
 
-## Roadmap
-
-- [ ] Support for multiple LLM providers (OpenAI, Anthropic, Ollama)
-- [ ] Skill templates and sharing
-- [ ] Interactive skill editor
-- [ ] Skill import/export
-- [ ] Plugin system
-
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
@@ -239,6 +367,9 @@ MIT License - see [LICENSE](LICENSE) for details.
 ## Acknowledgments
 
 - [Groq](https://groq.com) for fast LLM inference
+- [OpenAI](https://openai.com) for GPT models
+- [Anthropic](https://anthropic.com) for Claude models
+- [Ollama](https://ollama.ai) for local LLM support
 - [Cobra](https://github.com/spf13/cobra) for CLI framework
 - [Claude](https://claude.ai) for inspiration
 
