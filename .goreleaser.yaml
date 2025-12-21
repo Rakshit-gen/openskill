@@ -28,11 +28,11 @@ archives:
 
 brews:
   - name: openskill
-    homepage: "https://github.com/rakshitsisodiya/openskill"
+    homepage: "https://github.com/rakshit-gen/openskill"
     description: "CLI tool to create and manage Claude skills"
     license: "MIT"
     repository:
-      owner: rakshitsisodiya
+      owner: rakshit-gen
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     folder: Formula
