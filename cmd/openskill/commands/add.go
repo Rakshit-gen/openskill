@@ -34,19 +34,17 @@ var AddCmd = &cobra.Command{
 		// Use LLM to enhance the skill unless --manual is set
 		if !addManual {
 			gen := llm.NewGenerator()
-			if gen.IsAvailable() {
-				fmt.Printf("Generating skill with AI...\n")
-				enhanced, err := gen.EnhanceSkill(name, addDesc)
-				if err != nil {
-					fmt.Printf("AI generation failed: %v\nFalling back to manual mode.\n", err)
-				} else {
-					skill = enhanced
-				}
+			if !gen.IsAvailable() {
+				return fmt.Errorf("API key not configured. Set it with:\n\n  openskill config set api-key\n\nOr use --manual flag to skip AI generation")
 			}
-		}
-
-		// Fallback to manual if LLM not available or failed
-		if skill == nil {
+			fmt.Printf("Generating skill with AI...\n")
+			enhanced, err := gen.EnhanceSkill(name, addDesc)
+			if err != nil {
+				return fmt.Errorf("AI generation failed: %w", err)
+			}
+			skill = enhanced
+		} else {
+			// Manual mode
 			skill = &core.Skill{
 				Name:        name,
 				Description: addDesc,
