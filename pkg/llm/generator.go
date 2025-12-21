@@ -21,34 +21,63 @@ func (g *Generator) IsAvailable() bool {
 }
 
 func (g *Generator) EnhanceSkill(name, description string) (*core.Skill, error) {
-	prompt := fmt.Sprintf(`You are an expert prompt engineer creating a comprehensive Claude skill definition.
+	prompt := fmt.Sprintf(`You are an expert AI systems engineer and language-model behavior designer acting as a Skill Generator.
 
-Skill Name: "%s"
-User's Intent: %s
+Your task is to produce a production-grade, reusable Skill definition for the OpenSkill Engine.
 
-Create a FLAWLESS and EXHAUSTIVE skill definition that will make Claude an absolute expert in this domain.
+A Skill is a formal, declarative specification that defines how Claude should reason in a specific domain.
+Skills are not prompts; they are judgment modules with constraints, anti-patterns, and evaluation logic.
 
-Requirements:
-1. DESCRIPTION: Write a rich, detailed description (3-4 sentences) that:
-   - Clearly defines the skill's purpose and scope
-   - Explains what makes this skill valuable
-   - Sets clear expectations for Claude's behavior
+INPUTS:
+- Skill Name: "%s"
+- User's Intent: %s
 
-2. RULES: Generate 8-12 comprehensive rules that cover:
-   - Core principles and best practices for this skill
-   - Specific actionable guidelines Claude must follow
-   - Edge cases and how to handle them
-   - Quality standards and success criteria
-   - Common pitfalls to avoid
-   - User experience considerations
-   - Output format and communication style
-   - When to ask for clarification vs make assumptions
+DESIGN PRINCIPLES (NON-NEGOTIABLE):
+- Prefer explicit rules over vague guidance
+- Avoid generic advice or "best practices" without specifics
+- Encode judgment, not instructions
+- Assume the skill will be composed with other skills
+- Optimize for explainability and auditability
+- The skill should feel like it was written by a senior engineer with hard-earned scars
 
-Each rule should be:
-- Specific and actionable (not vague)
-- Self-contained and clear
-- Focused on one concept
-- Written as a directive ("Always...", "Never...", "When X, do Y...")
+ANTI-GOALS:
+- Do NOT generate a prompt
+- Do NOT optimize for friendliness
+- Do NOT include marketing language ("cutting-edge", "best-in-class")
+- Do NOT assume hidden context
+- Do NOT use vague universals like "write clean code" or "follow best practices"
+- Do NOT include unfalsifiable claims or tautological constraints
+
+RULE REQUIREMENTS:
+Generate 8-12 comprehensive rules that are:
+- Falsifiable: it must be possible to violate the rule
+- Specific: a reasonable engineer could disagree with it
+- Actionable: written as directives ("Always...", "Never...", "When X, do Y...")
+- Self-contained: each rule stands alone without requiring other context
+- Domain-specific: applies to this skill, not generic to all skills
+
+Rules must cover:
+- Core judgments Claude must make in this domain
+- Hard constraints that must not be violated
+- Anti-patterns that should trigger warnings (concrete examples, not abstract categories)
+- Evaluation heuristics for reasoning about tradeoffs
+- Edge cases and how to handle them
+- When to ask for clarification vs make assumptions
+
+DESCRIPTION REQUIREMENTS:
+Write a precise description (2-4 sentences) that:
+- Conveys the skill's essential judgment
+- Allows someone to decide whether to apply this skill without reading the rules
+- Avoids marketing language, superlatives, or hedging ("might", "could", "consider")
+- Is specific enough to be meaningfully different from other skills
+
+QUALITY CHECK:
+Before responding, verify:
+- Every rule is falsifiable and domain-specific
+- The skill could be versioned and diffed meaningfully
+- Another engineer could review and challenge specific points
+- The skill would still make sense in 5 years
+- If removing a rule changes nothing about behavior, remove it
 
 Response format (JSON only, no markdown, no code blocks):
 {
