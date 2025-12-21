@@ -1,0 +1,5 @@
+build/
+.claude/
+*.exe
+.env
+.DS_Store

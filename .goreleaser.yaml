@@ -1,0 +1,50 @@
+version: 2
+
+project_name: openskill
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - main: ./cmd/openskill
+    binary: openskill
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+
+brews:
+  - name: openskill
+    homepage: "https://github.com/rakshitsisodiya/openskill"
+    description: "CLI tool to create and manage Claude skills"
+    license: "MIT"
+    repository:
+      owner: rakshitsisodiya
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    folder: Formula
+    install: |
+      bin.install "openskill"
+
+checksum:
+  name_template: 'checksums.txt'
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
