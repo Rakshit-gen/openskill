@@ -21,6 +21,7 @@ func init() {
 	rootCmd.AddCommand(commands.ShowCmd)
 	rootCmd.AddCommand(commands.EditCmd)
 	rootCmd.AddCommand(commands.RemoveCmd)
+	rootCmd.AddCommand(commands.ConfigCmd)
 }
 
 func main() {

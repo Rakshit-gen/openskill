@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
+
+	"openskill/pkg/config"
 )
 
 type Client struct {
@@ -14,12 +15,10 @@ type Client struct {
 }
 
 func NewClient() *Client {
-	apiKey := os.Getenv("GROQ_API_KEY")
-	model := os.Getenv("OPENSKILL_MODEL")
-	if model == "" {
-		model = "llama-3.3-70b-versatile"
+	return &Client{
+		apiKey: config.GetAPIKey(),
+		model:  config.GetModel(),
 	}
-	return &Client{apiKey: apiKey, model: model}
 }
 
 func (c *Client) IsConfigured() bool {
