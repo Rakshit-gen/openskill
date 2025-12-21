@@ -34,8 +34,9 @@ func runHistory(cmd *cobra.Command, args []string) error {
 	name := args[0]
 	safeName := strings.ReplaceAll(strings.ToLower(name), " ", "-")
 
-	// Check if skill exists
-	skillPath := filepath.Join(".claude/skills", safeName+".yaml")
+	// Check if skill exists (directory-based structure)
+	skillDir := filepath.Join(".claude/skills", safeName)
+	skillPath := filepath.Join(skillDir, "SKILL.md")
 	if _, err := os.Stat(skillPath); os.IsNotExist(err) {
 		return fmt.Errorf("skill '%s' not found", name)
 	}
@@ -52,12 +53,12 @@ func runHistory(cmd *cobra.Command, args []string) error {
 
 	if entries, err := os.ReadDir(historyPath); err == nil {
 		for _, entry := range entries {
-			if strings.HasSuffix(entry.Name(), ".yaml") {
-				// Parse version from filename: name.v1.yaml, name.v2.yaml, etc.
+			if strings.HasSuffix(entry.Name(), ".md") {
+				// Parse version from filename: SKILL.v1.md, SKILL.v2.md, etc.
 				parts := strings.Split(entry.Name(), ".v")
 				if len(parts) >= 2 {
 					var ver int
-					fmt.Sscanf(parts[1], "%d.yaml", &ver)
+					fmt.Sscanf(parts[1], "%d.md", &ver)
 					if ver > 0 {
 						fi, _ := entry.Info()
 						versions = append(versions, VersionInfo{
@@ -106,7 +107,7 @@ func runHistory(cmd *cobra.Command, args []string) error {
 // SaveVersion saves the current skill as a versioned backup
 func SaveVersion(name string) error {
 	safeName := strings.ReplaceAll(strings.ToLower(name), " ", "-")
-	skillPath := filepath.Join(".claude/skills", safeName+".yaml")
+	skillPath := filepath.Join(".claude/skills", safeName, "SKILL.md")
 
 	// Read current content
 	content, err := os.ReadFile(skillPath)
@@ -124,11 +125,11 @@ func SaveVersion(name string) error {
 	nextVersion := 1
 	if entries, err := os.ReadDir(historyPath); err == nil {
 		for _, entry := range entries {
-			if strings.HasSuffix(entry.Name(), ".yaml") {
+			if strings.HasSuffix(entry.Name(), ".md") {
 				parts := strings.Split(entry.Name(), ".v")
 				if len(parts) >= 2 {
 					var ver int
-					fmt.Sscanf(parts[1], "%d.yaml", &ver)
+					fmt.Sscanf(parts[1], "%d.md", &ver)
 					if ver >= nextVersion {
 						nextVersion = ver + 1
 					}
@@ -138,6 +139,6 @@ func SaveVersion(name string) error {
 	}
 
 	// Save versioned copy
-	versionFile := filepath.Join(historyPath, fmt.Sprintf("%s.v%d.yaml", safeName, nextVersion))
+	versionFile := filepath.Join(historyPath, fmt.Sprintf("SKILL.v%d.md", nextVersion))
 	return os.WriteFile(versionFile, content, 0644)
 }

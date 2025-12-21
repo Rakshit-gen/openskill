@@ -82,22 +82,36 @@ func runInit(cmd *cobra.Command, args []string) error {
 	}
 	fmt.Println()
 
-	// Step 3: Create example skill
+	// Step 3: Create example skill (directory-based with SKILL.md)
 	fmt.Println("  [3/3] Creating example skill...")
-	examplePath := skillsDir + "/example.yaml"
-	if _, err := os.Stat(examplePath); os.IsNotExist(err) {
-		exampleContent := `name: example
-description: An example skill to demonstrate OpenSkill format
-
-rules:
-  - Be helpful and concise
-  - Provide code examples when relevant
-  - Explain your reasoning step by step
-`
-		if err := os.WriteFile(examplePath, []byte(exampleContent), 0644); err != nil {
-			fmt.Printf("        ⚠ Failed to create example skill: %v\n", err)
+	exampleDir := skillsDir + "/example"
+	examplePath := exampleDir + "/SKILL.md"
+	if _, err := os.Stat(exampleDir); os.IsNotExist(err) {
+		// Create skill directory
+		if err := os.MkdirAll(exampleDir, 0755); err != nil {
+			fmt.Printf("        ⚠ Failed to create example skill directory: %v\n", err)
 		} else {
-			fmt.Println("        ✓ Created example.yaml")
+			exampleContent := `---
+name: example
+description: An example skill to demonstrate the OpenSkill format
+---
+
+# example
+
+An example skill to demonstrate the OpenSkill format.
+
+## Rules
+
+- Be helpful and concise in all responses
+- Provide code examples when they would clarify the explanation
+- Explain your reasoning step by step when solving problems
+- Ask clarifying questions when the request is ambiguous
+`
+			if err := os.WriteFile(examplePath, []byte(exampleContent), 0644); err != nil {
+				fmt.Printf("        ⚠ Failed to create example skill: %v\n", err)
+			} else {
+				fmt.Println("        ✓ Created example/SKILL.md")
+			}
 		}
 	} else {
 		fmt.Println("        ✓ Example skill already exists")
@@ -111,7 +125,7 @@ rules:
 	fmt.Println()
 	fmt.Println("  How Claude discovers your skills:")
 	fmt.Println("  ─────────────────────────────────")
-	fmt.Println("  Claude automatically reads skill files from .claude/skills/")
+	fmt.Println("  Claude reads SKILL.md files from .claude/skills/<skill-name>/")
 	fmt.Println("  when you start a conversation in this directory.")
 	fmt.Println()
 	fmt.Println("  Quick Start:")
@@ -123,13 +137,18 @@ rules:
 	fmt.Println("  • Validate a skill:  openskill validate code-review")
 	fmt.Println("  • Remove a skill:    openskill remove code-review")
 	fmt.Println()
-	fmt.Println("  Skill File Format (.claude/skills/*.yaml):")
-	fmt.Println("  ───────────────────────────────────────────")
+	fmt.Println("  Skill File Format (.claude/skills/<name>/SKILL.md):")
+	fmt.Println("  ──────────────────────────────────────────────────")
+	fmt.Println("  ---")
 	fmt.Println("  name: skill-name")
 	fmt.Println("  description: What this skill does")
-	fmt.Println("  rules:")
-	fmt.Println("    - Rule 1: Be specific about behavior")
-	fmt.Println("    - Rule 2: Define constraints and requirements")
+	fmt.Println("  ---")
+	fmt.Println()
+	fmt.Println("  # skill-name")
+	fmt.Println()
+	fmt.Println("  ## Rules")
+	fmt.Println("  - Rule 1: Be specific about behavior")
+	fmt.Println("  - Rule 2: Define constraints and requirements")
 	fmt.Println()
 	fmt.Println("  Need help? Run: openskill --help")
 	fmt.Println()

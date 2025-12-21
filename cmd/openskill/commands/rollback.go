@@ -32,9 +32,10 @@ func runRollback(cmd *cobra.Command, args []string) error {
 	}
 
 	safeName := strings.ReplaceAll(strings.ToLower(name), " ", "-")
-	skillPath := filepath.Join(".claude/skills", safeName+".yaml")
+	skillDir := filepath.Join(".claude/skills", safeName)
+	skillPath := filepath.Join(skillDir, "SKILL.md")
 	historyPath := filepath.Join(historyDir, safeName)
-	versionFile := filepath.Join(historyPath, fmt.Sprintf("%s.v%d.yaml", safeName, version))
+	versionFile := filepath.Join(historyPath, fmt.Sprintf("SKILL.v%d.md", version))
 
 	// Check if skill exists
 	if _, err := os.Stat(skillPath); os.IsNotExist(err) {
