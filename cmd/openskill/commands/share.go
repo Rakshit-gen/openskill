@@ -29,13 +29,13 @@ type ShareResponse struct {
 var ShareCmd = &cobra.Command{
 	Use:   "share <skill-name>",
 	Short: "Share a skill to the OpenSkill marketplace",
-	Long: `Upload a skill to openskill.dev marketplace for others to discover and use.
+	Long: `Upload a skill to openskill.online marketplace for others to discover and use.
 
 By default, skills are shared publicly. Use --public=false for unlisted sharing
 (accessible via direct link only).
 
 After sharing, you'll receive:
-- A shareable URL (openskill.dev/skills/username/skill-name)
+- A shareable URL (openskill.online/skills/username/skill-name)
 - An install command others can use`,
 	Args: cobra.ExactArgs(1),
 	Example: `  openskill share code-review
@@ -87,7 +87,7 @@ After sharing, you'll receive:
 
 		// For now, simulate the upload since we don't have a backend yet
 		// In production, this would POST to the actual API
-		apiURL := "https://api.openskill.dev/v1/skills"
+		apiURL := "https://api.openskill.online/v1/skills"
 
 		// Check if we're in development mode
 		if os.Getenv("OPENSKILL_API_URL") != "" {
