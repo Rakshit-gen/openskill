@@ -70,6 +70,10 @@ func (g *Generator) ProviderName() string {
 	return g.provider.Name()
 }
 
+func (g *Generator) Provider() Provider {
+	return g.provider
+}
+
 func (g *Generator) EnhanceSkill(name, description string) (*core.Skill, error) {
 	prompt := fmt.Sprintf(`You are an expert AI systems engineer and language-model behavior designer acting as a Skill Generator.
 
