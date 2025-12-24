@@ -45,9 +45,10 @@ func init() {
 	// Templates
 	rootCmd.AddCommand(commands.TemplateCmd)
 
-	// Import/Export
+	// Import/Export/Share
 	rootCmd.AddCommand(commands.ExportCmd)
 	rootCmd.AddCommand(commands.ImportCmd)
+	rootCmd.AddCommand(commands.ShareCmd)
 
 	// Testing
 	rootCmd.AddCommand(commands.TestCmd)
