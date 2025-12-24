@@ -51,32 +51,8 @@ OpenSkill is a command-line tool that simplifies creating and managing [Claude](
 
 ### Quick Install (Recommended)
 
-#### macOS (Apple Silicon)
-
 ```bash
-curl -L https://github.com/rakshit-gen/openskill/releases/download/v0.1.0/openskill_darwin_arm64.tar.gz | tar xz
-sudo mv openskill /usr/local/bin/
-```
-
-#### macOS (Intel)
-
-```bash
-curl -L https://github.com/rakshit-gen/openskill/releases/download/v0.1.0/openskill_darwin_amd64.tar.gz | tar xz
-sudo mv openskill /usr/local/bin/
-```
-
-#### Linux (x86_64)
-
-```bash
-curl -L https://github.com/rakshit-gen/openskill/releases/download/v0.1.0/openskill_linux_amd64.tar.gz | tar xz
-sudo mv openskill /usr/local/bin/
-```
-
-#### Linux (ARM64)
-
-```bash
-curl -L https://github.com/rakshit-gen/openskill/releases/download/v0.1.0/openskill_linux_arm64.tar.gz | tar xz
-sudo mv openskill /usr/local/bin/
+curl -fsSL openskill.online/api/install | bash
 ```
 
 ### Build from Source
@@ -85,9 +61,7 @@ Requires Go 1.21+
 
 ```bash
 git clone https://github.com/rakshit-gen/openskill.git
-cd openskill/OpenSkill-cli
-go build -o openskill ./cmd/openskill
-sudo mv openskill /usr/local/bin/
+cd openskill && make build && sudo make install
 ```
 
 ### Verify Installation
