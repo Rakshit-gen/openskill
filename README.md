@@ -1,4 +1,3 @@
-
 <h1 align="center">OpenSkill CLI</h1>
 
 <p align="center">
