@@ -1,6 +1,3 @@
-<p align="center">
-  <img src="assets/logo.svg" width="120" alt="OpenSkill Logo">
-</p>
 
 <h1 align="center">OpenSkill CLI</h1>
 
